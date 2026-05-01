@@ -1,30 +1,34 @@
 import os
 from telegram import Update
 from telegram.ext import ApplicationBuilder, CommandHandler, ContextTypes
+from flask import Flask
+import threading
 
-# беремо токен з Render Environment
 TOKEN = os.getenv("TOKEN")
 
 if not TOKEN:
-    raise ValueError("TOKEN не знайдений! Додай його в Render Environment")
+    raise ValueError("TOKEN не знайдений!")
 
-# команда /start
+# Telegram bot
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    await update.message.reply_text("🔥 Axel Bot працює!")
+    await update.message.reply_text("🔥 Бот працює!")
 
-# команда /help
-async def help_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    await update.message.reply_text("Напиши /start щоб перевірити бота")
-
-def main():
+def run_bot():
     app = ApplicationBuilder().token(TOKEN).build()
-
     app.add_handler(CommandHandler("start", start))
-    app.add_handler(CommandHandler("help", help_command))
-
     print("Бот запущений...")
-
     app.run_polling()
 
+# Flask (щоб Render був задоволений)
+web = Flask(__name__)
+
+@web.route("/")
+def home():
+    return "Bot is running!"
+
 if __name__ == "__main__":
-    main()
+    # запускаємо бота в окремому потоці
+    threading.Thread(target=run_bot).start()
+
+    # запускаємо веб сервер
+    web.run(host="0.0.0.0", port=int(os.environ.get("PORT", 10000)))
