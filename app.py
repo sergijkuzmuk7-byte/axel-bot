@@ -1,21 +1,21 @@
 import os
+import asyncio
 from telegram import Update
 from telegram.ext import ApplicationBuilder, CommandHandler, ContextTypes
 
-print("STARTING...")
+TOKEN = os.environ.get("TOKEN")
 
-TOKEN = os.getenv("TOKEN")
-
-if TOKEN is None:
-    print("❌ TOKEN IS NONE")
-    exit()
+if not TOKEN:
+    raise Exception("❌ TOKEN не знайдено!")
 
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await update.message.reply_text("🔥 Бот працює!")
 
-app = ApplicationBuilder().token(TOKEN).build()
-app.add_handler(CommandHandler("start", start))
+async def main():
+    app = ApplicationBuilder().token(TOKEN).build()
+    app.add_handler(CommandHandler("start", start))
+    print("✅ BOT STARTED")
+    await app.run_polling()
 
-print("✅ BOT STARTED")
-
-app.run_polling()
+if __name__ == "__main__":
+    asyncio.run(main())
